@@ -48,6 +48,8 @@ const auto COLOR_TEXT_MUTED   = ImVec4(0.40f, 0.42f, 0.49f, 1.00f);  // Muted
 
 // Physical-button changes (ASM) poll rate
 constexpr auto DYNAMIC_POLL_FRAMES = FPS * 2;
+// Battery refresh rate, counted in ASM poll cycles.
+constexpr auto BATTERY_POLL_CYCLES = 30; 
 constexpr float TITLE_BAR_HEIGHT = 42.0f;
 
 class CrossPlatformGUI
