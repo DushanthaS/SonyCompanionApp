@@ -94,10 +94,12 @@ private:
 	Property<int> _asmLevel = { 0 };
 	Property<SOUND_POSITION_PRESET> _surroundPosition = { SOUND_POSITION_PRESET::OUT_OF_RANGE, SOUND_POSITION_PRESET::OFF };
 	Property<int> _vptType = { 0 };
+	// Which battery layout this device turned out to have. Latched on the first successful read and never re-probed.
+	enum class BatteryKind { Unknown, Single, Dual };
+	BatteryKind _batteryKind = BatteryKind::Unknown;
 
 	int _batteryLevel = -1;
 	bool _batteryCharging = false;
-	bool _hasDualBattery = false;
 	int _batteryLeft = -1;
 	int _batteryRight = -1;
 	int _batteryCase = -1;
