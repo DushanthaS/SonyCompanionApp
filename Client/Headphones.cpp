@@ -88,27 +88,41 @@ void Headphones::initDevice()
 void Headphones::requestBattery()
 {
 	// Single battery (over-ear and most models): GET 22 00 -> RET 23 00 <level> <charging>
-	try {
-		auto resp = this->_conn.sendCommandAndReadResponse({ (char)V2Command::BATTERY_GET, 0x00 }, V2Command::BATTERY_RET, 0x00);
-		if (resp.size() >= 4) {
-			std::lock_guard guard(this->_propertyMtx);
-			this->_batteryLevel = (unsigned char)resp[2];
-			this->_batteryCharging = resp[3] == 1;
-			return; // found a single battery; don't waste time probing the TWS types
-		}
-	} catch (...) {}
+if (this->_batteryKind != BatteryKind::Dual)
+	{
+		try {
+			auto resp = this->_conn.sendCommandAndReadResponse({ (char)V2Command::BATTERY_GET, 0x00 }, V2Command::BATTERY_RET, 0x00);
+			if (resp.size() >= 4) {
+				std::lock_guard guard(this->_propertyMtx);
+				this->_batteryKind = BatteryKind::Single;
+				this->_batteryLevel = (unsigned char)resp[2];
+				this->_batteryCharging = resp[3] == 1;
+				return; // found a single battery; don't waste time probing the TWS types
+			}
+		} catch (...) {}
+
+		// Never fall through to the TWS inquiries on a device that has already answered the single-battery one. 
+		if (this->_batteryKind == BatteryKind::Single)
+			return;
+	}
 
 	// TWS earbuds: dual L/R (22 09 -> 23 09 <Llvl> <Lchg> <Rlvl> <Rchg>) and case (22 0a -> 23 0a <lvl> <chg>).
+	// Only reached on a device that has never once answered 22 00.
+	bool isDual = false;
 	try {
 		auto resp = this->_conn.sendCommandAndReadResponse({ (char)V2Command::BATTERY_GET, 0x09 }, V2Command::BATTERY_RET, 0x09);
 		if (resp.size() >= 6) {
 			std::lock_guard guard(this->_propertyMtx);
-			this->_hasDualBattery = true;
+			this->_batteryKind = BatteryKind::Dual;
 			this->_batteryLeft = (unsigned char)resp[2];
 			this->_batteryRight = (unsigned char)resp[4];
 			this->_batteryLevel = std::min(this->_batteryLeft, this->_batteryRight);
+			isDual = true;
 		}
 	} catch (...) {}
+
+	if (!isDual)
+		return; // no case battery on something we haven't confirmed is a pair of earbuds
 
 	try {
 		auto resp = this->_conn.sendCommandAndReadResponse({ (char)V2Command::BATTERY_GET, 0x0a }, V2Command::BATTERY_RET, 0x0a);
