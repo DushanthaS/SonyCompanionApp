@@ -377,6 +377,7 @@ void CrossPlatformGUI::_pumpConnectionState()
 		this->_syncUIFromHeadphones();
 		this->_synced = true;
 		this->_pollCounter = 0;
+		this->_batteryPollCounter = 0; // battery was just read by the refresh above
 	}
 
 	if (!this->_synced)
