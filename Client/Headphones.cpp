@@ -143,7 +143,7 @@ bool Headphones::isBatteryCharging()
 	return this->_batteryCharging;
 }
 
-bool Headphones::hasDualBattery() { return this->_hasDualBattery; }
+bool Headphones::hasDualBattery() { return this->_batteryKind == BatteryKind::Dual; }
 int Headphones::getBatteryLeft() { return this->_batteryLeft; }
 int Headphones::getBatteryRight() { return this->_batteryRight; }
 int Headphones::getBatteryCase() { return this->_batteryCase; }
